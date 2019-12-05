@@ -221,7 +221,7 @@ function executeTest() {
 		if (row + column < short && row + column > 0) {
 			short = row + column;
 		}
-		let steps = calculatePathToIntersection(interCoord);
+		let steps = calculatePathToIntersection(interCoord, shortSteps);
 
 		if (steps < shortSteps) {
 			shortSteps = steps;
@@ -270,7 +270,7 @@ function calculateIntersectionCoord(vector1, vector2) {
 	return { x: interX, y: interY };
 }
 
-function calculatePathToIntersection(interCoord) {
+function calculatePathToIntersection(interCoord, shortSteps) {
 	let distance = 0;
 	let line1Steps = 0,
 		line2Steps = 0;
@@ -298,6 +298,9 @@ function calculatePathToIntersection(interCoord) {
 			distance = point.end.path;
 		}
 		line1Steps += distance;
+		if (line1Steps > shortSteps) {
+			break;
+		}
 	}
 
 	for (let index = 0; index < line2Coords.length; index++) {
@@ -323,6 +326,9 @@ function calculatePathToIntersection(interCoord) {
 			distance = point.end.path;
 		}
 		line2Steps += distance;
+		if (line2Steps > shortSteps - line1Steps) {
+			break;
+		}
 	}
 
 	return line1Steps + line2Steps;
