@@ -48,12 +48,11 @@ function executeTest() {
 	// 	return +x;
   // });
 
-  let dataArr = testDataP202;  
+  let dataArr = data;  
   let maxThrust = -1;
   let accSignal = Array(5).fill(0);
-  let outputs = Array(10).fill(0);
+  let outputs = Array(5).fill(0);
   let a = 0, b = 0, c = 0, d = 0, e = 0;
-  let v = 5, w = 5, x = 5, y = 5, z = 5;
 
   while (a < 5)
   {
@@ -102,84 +101,15 @@ function executeTest() {
             }
 
             runAmplifier(dataArr, e, outputs[3])
-            outputs[4] = output;
-
-            while (v < 10)
-            {
-              runAmplifier(dataArr, v, outputs[4]);
-              outputs[5] = output;
-
-              while (w < 10)
-              {
-                if (v === w)
-                {
-                  w++;
-                  continue;
-                }
-
-                runAmplifier(dataArr, w, outputs[5]);
-                outputs[6] = output;
-
-                while (x < 10)
-                {
-                  if (v === x || w === x)
-                  {
-                    x++;
-                    continue;
-                  }
-
-                  runAmplifier(dataArr, x, outputs[6]);
-                  outputs[7] = output;
-
-                  while (y < 10)
-                  {
-                    if (v === y || w === y || x === y)
-                    {
-                      y++;
-                      continue;
-                    }
-
-                    runAmplifier(dataArr, y, outputs[7]);
-                    outputs[8] = output;
-
-                    while (z < 10)
-                    {
-                      if (v === z || w === z || x === z || y === z)
-                      {
-                        z++;
-                        continue;
-                      }
-
-                      runAmplifier(dataArr, z, outputs[8]);
-                      outputs[9] = output;
-
-                      if (output > maxThrust)
-                      {
-                        maxThrust = output;
-                        accSignal = [v,w,x,y,z];
-                      }
-
-                      z++;
-                    }
-
-                    y++;
-                    z = 5;
-                  }
-
-                  x++;
-                  y = 5;
-                }
-
-                w++;
-                x = 5;
-              }
-
-              v++;
-              w = 5;
-            }
+						outputs[4] = output;
+						
+						if (output > maxThrust)
+						{
+							maxThrust = output;
+							accSignal = [a,b,c,d,e];
+						}
 
             e++;
-            v = 5;
           }
 
           d++;
