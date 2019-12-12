@@ -80,9 +80,9 @@ orderedTiles.forEach(function(value, key, map) {
 		});
 	if (coords[0] > startX) {
 		if (output.substr(0, 1) == ' ') {
-			//console.log(output.slice(1));
+			// console.log(output.slice(1));
 		} else {
-			//console.log(output);
+			// console.log(output);
 		}
 		startX = coords[0];
 		output = '';
@@ -95,7 +95,7 @@ orderedTiles.forEach(function(value, key, map) {
 	}
 });
 console.timeEnd('AoC');
-//console.log(output);
+// console.log(output);
 //console.log('END');
 
 function calculateDirection(direction, amplifier) {
