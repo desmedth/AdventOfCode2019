@@ -1,6 +1,6 @@
 // GENERAL VARS
 let data = '';
-let dataFile = 'test03.txt';
+let dataFile = 'test05.txt';
 let day = 14;
 
 let testResults = [31, 165];
@@ -35,6 +35,7 @@ function executeTest() {
 	console.log(reactions);
 	console.log(fuelRecipe);
 	console.log('STEP 1: ' + fuelRecipe['ORE'].needed);
+	calculateFuelAmount(Object.assign({}, fuelRecipe));
 }
 
 function createReactionDB(inputArray) {
@@ -64,7 +65,8 @@ function createReactionDB(inputArray) {
 				reactions[elementLine[1]] = {
 					amount: +elementLine[0],
 					recipe: [],
-					base: baseIngredient
+					base: baseIngredient,
+					oreCost: 0
 				};
 			}
 		});
@@ -80,6 +82,7 @@ function createReactionDB(inputArray) {
 				});
 				if (recipeLine[1] === 'ORE') {
 					reactions[elementLine[1]].base = 1;
+					reactions[elementLine[1]].oreCost += +recipeLine[0];
 				}
 				if (reactions[elementLine[1]]) {
 					reactions[elementLine[1]].amount = +elementLine[0];
@@ -154,4 +157,48 @@ function calculateFuelRecipe() {
 	return elementsNeeded;
 }
 
-function getElementAmount(element) {}
+function calculateFuelAmount(recipe) {
+	const OreNeeded = recipe['ORE'].needed;
+	let restAmount = oreInput - OreNeeded;
+
+	let counter = 0;
+
+	let fuelRun = {};
+
+	for (const key in recipe) {
+		if (key !== 'ORE') {
+			fuelRun[key] = {
+				amount: recipe[key].amount,
+				produced: recipe[key].produced,
+				delta: recipe[key].delta
+			};
+		}
+	}
+
+	while (restAmount > OreNeeded && counter < 100000000) {
+		counter++;
+
+		for (const element in fuelRun) {
+			let amount = recipe[element].amount;
+			let produced = recipe[element].produced;
+			let newDelta = fuelRun[element].delta - amount;
+
+			if (newDelta < 0) {
+				fuelRun[element].amount += amount;
+				fuelRun[element].produced += produced;
+				newDelta += produced;
+				if (reactions[element].base === 1) {
+					let elementCost = reactions[element].oreCost * (produced / reactions[element].amount);
+					restAmount -= elementCost;
+				}
+			}
+
+			fuelRun[element].delta = newDelta;
+		}
+	}
+
+	console.log('STEP2: ' + counter);
+	console.log('STEP2rest: ' + restAmount);
+}
+
+function calculateOreCost() {}
