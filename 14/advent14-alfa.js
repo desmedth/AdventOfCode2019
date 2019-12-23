@@ -1,6 +1,6 @@
 // GENERAL VARS
 let data = '';
-let dataFile = 'test05.txt';
+let dataFile = 'input.txt';
 let day = 14;
 
 let testResults = [31, 165];
@@ -35,7 +35,8 @@ function executeTest() {
 	console.log(reactions);
 	console.log(fuelRecipe);
 	console.log('STEP 1: ' + fuelRecipe['ORE'].needed);
-	calculateFuelAmount(Object.assign({}, fuelRecipe));
+	let step2 = calculateFuelRun();
+	console.log('STEP2: '+step2);
 }
 
 function createReactionDB(inputArray) {
@@ -201,4 +202,138 @@ function calculateFuelAmount(recipe) {
 	console.log('STEP2rest: ' + restAmount);
 }
 
-function calculateOreCost() {}
+function calculateOreCost(recipe) {
+	let counter = 0;
+	let fuelRun = {};
+
+	for (const key in recipe) {
+		if (key !== 'ORE') {
+			fuelRun[key] = {
+				amount: recipe[key].amount,
+				produced: recipe[key].produced,
+				delta: recipe[key].delta
+			};
+		}
+	}
+
+	for (const key in fuelRun) {
+		const element = fuelRun[key];
+
+		if (key !== 'ORE' && reactions[key].base === 1)
+		{
+			element.oreCost = calculateElementCost(key, fuelRun[key].produced);
+		}
+	}
+
+	console.log(fuelRun);
+}
+
+
+function calculateElementCost(element, produced)
+{
+	let recipe = reactions[element].recipe;
+	let elemAmount = reactions[element].amount;
+	let cost = 0;
+	recipe.forEach(ingredient => {
+		let amount = ingredient.amount;
+
+		cost += (produced / elemAmount) * amount;
+	});
+
+	return cost;
+}
+
+function calculateFuelRun() {
+	let fuelRecipe = [...reactions['FUEL'].recipe];
+	let elementsNeeded = {};
+	let oreCount = 0;
+	let runCounter = 0;
+
+	while (fuelRecipe.length > 0) {
+		let ingredient = fuelRecipe.pop();
+		let neededElement = {
+			amount: ingredient.amount,
+			produced: 0,
+			delta: -ingredient.amount
+		};
+		elementsNeeded[ingredient.element] = neededElement;
+	}
+
+	let production = true;
+
+	while (production) {
+		let productionLine = {};
+		for (const key in elementsNeeded) {
+			if (elementsNeeded[key].delta < 0) {
+				productionLine[key] = elementsNeeded[key];
+			}
+		}
+
+		production = Object.keys(productionLine).length > 0;
+
+		if (production) {
+			for (const key in productionLine) {
+				let toProduce = reactions[key];
+				elementsNeeded[key].produced += toProduce.amount;
+				elementsNeeded[key].delta += toProduce.amount;
+				let productionRecipe = [...toProduce.recipe];
+				while (productionRecipe.length > 0) {
+					let ingredient = productionRecipe.pop();
+					if (ingredient.element !== 'ORE') {
+						if (elementsNeeded[ingredient.element]) {
+							elementsNeeded[ingredient.element].amount += ingredient.amount;
+							elementsNeeded[ingredient.element].delta -= ingredient.amount;
+						} else {
+							let neededElement = {
+								amount: ingredient.amount,
+								produced: 0,
+								delta: -ingredient.amount
+							};
+							elementsNeeded[ingredient.element] = neededElement;
+						}
+					} else {
+						oreCount += ingredient.amount;
+					}
+				}
+			}
+		}
+		else
+		{
+			if (oreCount <= oreInput)
+			{
+				production = true;
+				runCounter++;
+
+				fuelRecipe = [...reactions['FUEL'].recipe];
+
+				while (fuelRecipe.length > 0) {
+					let ingredient = fuelRecipe.pop();
+					let neededElement = {
+						amount: ingredient.amount,
+						produced: 0,
+						delta: elementsNeeded[ingredient.element].delta-ingredient.amount
+					};
+					elementsNeeded[ingredient.element] = neededElement;
+				}
+
+				if (runCounter % 100000 === 0)
+				{
+					console.log(elementsNeeded);
+					console.log(oreCount);
+					console.log('RUN: '+runCounter);
+				}
+
+				if (runCounter > 10000000)
+				{
+					production = false;
+				}
+			}
+			else
+			{
+				runCounter;
+			}
+		}
+	}
+
+	return [runCounter, oreCount];
+}
